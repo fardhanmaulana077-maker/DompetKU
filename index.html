@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>DompetKu Pro - Elegant Finance</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+<style>
+  body {
+    font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, sans-serif;
+    background: #f3f4f8;
+  }
+  ::-webkit-scrollbar {
+    width: 4px;
+  }
+  ::-webkit-scrollbar-track {
+    background: #eef2f6;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 10px;
+  }
+  .glass-card {
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(2px);
+    border: 1px solid rgba(255, 255, 255, 0.5);
+  }
+  .fab-pulse {
+    box-shadow: 0 8px 20px rgba(37, 99, 235, 0.4);
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+  .fab-pulse:hover {
+    transform: scale(1.05);
+    box-shadow: 0 12px 28px rgba(37, 99, 235, 0.5);
+  }
+  .tab {
+    display: none;
+    animation: fadeInUp 0.35s ease forwards;
+  }
+  .tab.active {
+    display: block;
+  }
+  @keyframes fadeInUp {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  .nav-btn {
+    transition: all 0.2s;
+    border-radius: 2rem;
+    padding: 8px 12px;
+  }
+  .nav-btn.active {
+    background: #eff6ff;
+    color: #2563eb;
+    font-weight: 600;
+  }
+  input:focus, select:focus {
+    outline: none;
+    ring: 2px solid #2563eb;
+    border-color: #2563eb;
+  }
+  #splash {
+    background: radial-gradient(circle at 20% 30%, #0b1120, #020617);
+  }
+</style>
+</head>
+<body class="bg-gradient-to-br from-slate-50 to-gray-100">
+
+<!-- SPLASH SCREEN -->
+<div id="splash" class="fixed inset-0 z-[9999] flex flex-col items-center justify-center transition-opacity duration-500">
+  <div class="relative">
+    <div class="absolute inset-0 blur-2xl bg-blue-500/20 rounded-full w-32 h-32"></div>
+    <i class="fas fa-wallet text-7xl text-blue-400 drop-shadow-xl mb-6 relative"></i>
+  </div>
+  <h1 class="text-3xl font-extrabold tracking-tight bg-gradient-to-r from-white to-blue-200 bg-clip-text text-transparent">DompetKu</h1>
+  <p class="text-slate-300 text-sm mt-2 tracking-wide">kelola keuangan elegan</p>
+  <div class="mt-8 flex space-x-2">
+    <div class="w-2 h-2 bg-blue-400 rounded-full animate-pulse"></div>
+    <div class="w-2 h-2 bg-blue-300 rounded-full animate-pulse delay-150"></div>
+    <div class="w-2 h-2 bg-indigo-300 rounded-full animate-pulse delay-300"></div>
+  </div>
+  <p class="absolute bottom-8 text-slate-500 text-xs">by @ToroDev</p>
+</div>
+
+<!-- MAIN APP -->
+<div id="mainApp" class="pb-28 max-w-md mx-auto relative" style="display:none;">
+  <!-- Top bar -->
+  <div class="sticky top-0 z-40 bg-white/80 backdrop-blur-md border-b border-gray-100/80 shadow-sm">
+    <div class="flex items-center justify-between px-5 py-4">
+      <div class="flex items-center gap-2">
+        <div class="w-8 h-8 rounded-xl bg-gradient-to-tr from-blue-500 to-indigo-600 flex items-center justify-center shadow-sm">
+          <i class="fas fa-coins text-white text-sm"></i>
+        </div>
+        <h1 class="font-bold text-xl tracking-tight text-slate-800">DompetKu</h1>
+      </div>
+      <button onclick="resetData()" class="text-slate-400 hover:text-red-500 transition text-sm flex items-center gap-1 bg-gray-50 px-3 py-1.5 rounded-full shadow-sm">
+        <i class="fas fa-undo-alt text-xs"></i>
+        <span>Reset</span>
+      </button>
+    </div>
+  </div>
+
+  <div class="px-5 pt-5 pb-2 space-y-6">
+    
+    <!-- DASHBOARD TAB -->
+    <div id="dashboardTab" class="tab active space-y-5">
+      <div class="relative overflow-hidden bg-gradient-to-br from-slate-800 to-slate-900 rounded-3xl shadow-xl p-6 text-white">
+        <div class="absolute -right-6 -top-6 w-24 h-24 bg-blue-500/20 rounded-full blur-2xl"></div>
+        <div class="absolute right-4 bottom-2 opacity-20"><i class="fas fa-credit-card text-6xl"></i></div>
+        <p class="text-slate-300 text-sm tracking-wide flex items-center gap-1"><i class="fas fa-wallet text-xs"></i> Saldo saat ini</p>
+        <p id="saldo" class="text-4xl font-extrabold mt-1 tracking-tight">Rp 0</p>
+        <div class="flex justify-between mt-4 text-sm">
+          <span class="bg-white/10 px-3 py-1 rounded-full"><i class="fas fa-arrow-up text-emerald-400 mr-1"></i> Pemasukan</span>
+          <span class="bg-white/10 px-3 py-1 rounded-full"><i class="fas fa-arrow-down text-rose-400 mr-1"></i> Pengeluaran</span>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-2 gap-4">
+        <div class="bg-white rounded-2xl shadow-md p-5 border border-gray-50 hover:shadow-lg transition">
+          <div class="flex items-center justify-between">
+            <i class="fas fa-circle-up text-emerald-500 text-xl"></i>
+            <span class="text-xs text-gray-400">Total</span>
+          </div>
+          <p class="text-gray-500 text-xs mt-2">Pemasukan</p>
+          <p id="pemasukan" class="text-xl font-bold text-emerald-600 mt-1">Rp 0</p>
+        </div>
+        <div class="bg-white rounded-2xl shadow-md p-5 border border-gray-50 hover:shadow-lg transition">
+          <div class="flex items-center justify-between">
+            <i class="fas fa-circle-down text-rose-500 text-xl"></i>
+            <span class="text-xs text-gray-400">Total</span>
+          </div>
+          <p class="text-gray-500 text-xs mt-2">Pengeluaran</p>
+          <p id="pengeluaran" class="text-xl font-bold text-rose-600 mt-1">Rp 0</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- TRANSAKSI TAB -->
+    <div id="transaksiTab" class="tab space-y-5">
+      <div class="bg-white rounded-2xl shadow-lg p-5 border border-gray-100">
+        <h2 class="font-semibold text-slate-800 flex items-center gap-2 text-lg"><i class="fas fa-pen-alt text-blue-500"></i> Tambah Transaksi</h2>
+        <div class="space-y-3 mt-3">
+          <div class="relative">
+            <i class="fas fa-tag absolute left-3 top-3.5 text-gray-400 text-sm"></i>
+            <input id="nama" type="text" placeholder="Nama transaksi" class="w-full p-3 pl-9 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-300 bg-gray-50">
+          </div>
+          <div class="relative">
+            <i class="fas fa-rupiah-sign absolute left-3 top-3.5 text-gray-400 text-sm"></i>
+            <input id="jumlah" type="number" placeholder="Jumlah uang" class="w-full p-3 pl-9 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-300 bg-gray-50">
+          </div>
+          <div class="relative">
+            <i class="fas fa-exchange-alt absolute left-3 top-3.5 text-gray-400 text-sm"></i>
+            <select id="jenis" class="w-full p-3 pl-9 border border-gray-200 rounded-xl bg-gray-50 appearance-none">
+              <option value="pemasukan">📈 Pemasukan</option>
+              <option value="pengeluaran">📉 Pengeluaran</option>
+            </select>
+          </div>
+          <button onclick="simpanTransaksi()" class="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-semibold py-3 rounded-xl transition shadow-md flex items-center justify-center gap-2">
+            <i class="fas fa-save"></i> Simpan Transaksi
+          </button>
+        </div>
+      </div>
+      
+      <div>
+        <h3 class="font-medium text-gray-700 flex items-center gap-2 mb-3"><i class="fas fa-history text-indigo-400"></i> Riwayat Transaksi</h3>
+        <ul id="riwayat" class="space-y-2"></ul>
+      </div>
+    </div>
+
+    <!-- TARGET TAB -->
+    <div id="targetTab" class="tab space-y-5">
+      <div class="bg-white rounded-2xl shadow-lg p-5 border border-gray-100">
+        <h2 class="font-semibold text-slate-800 flex items-center gap-2"><i class="fas fa-bullseye text-purple-500"></i> Target Tabungan</h2>
+        <div class="space-y-3 mt-3">
+          <input id="targetNama" type="text" placeholder="Nama target (mobil, liburan, dll)" class="w-full p-3 border border-gray-200 rounded-xl bg-gray-50">
+          <input id="targetJumlah" type="number" placeholder="Jumlah target" class="w-full p-3 border border-gray-200 rounded-xl bg-gray-50">
+          <button onclick="tambahTarget()" class="w-full bg-purple-600 hover:bg-purple-700 text-white font-semibold py-3 rounded-xl transition shadow flex items-center justify-center gap-2">
+            <i class="fas fa-plus-circle"></i> Tambah Target
+          </button>
+        </div>
+      </div>
+      <div id="targetList" class="space-y-3"></div>
+    </div>
+
+    <!-- GRAFIK TAB -->
+    <div id="grafikTab" class="tab">
+      <div class="bg-white rounded-2xl shadow-xl p-5 border border-gray-100">
+        <div class="flex items-center gap-2 border-b border-gray-100 pb-3 mb-4">
+          <i class="fas fa-chart-line text-blue-500 text-xl"></i>
+          <h2 class="font-semibold text-gray-800">Statistik Keuangan</h2>
+        </div>
+        <canvas id="chart" class="w-full h-64"></canvas>
+        <p class="text-center text-xs text-gray-400 mt-4">Grafik pemasukan vs pengeluaran</p>
+      </div>
+    </div>
+
+    <!-- BACKUP TAB -->
+    <div id="backupTab" class="tab space-y-4">
+      <div class="bg-white rounded-2xl shadow-lg p-6 text-center">
+        <i class="fas fa-cloud-upload-alt text-4xl text-green-500 mb-2"></i>
+        <h3 class="font-semibold">Backup & Restore</h3>
+        <p class="text-xs text-gray-500 mb-4">Simpan data ke file atau pulihkan dari cadangan</p>
+        <button onclick="backupData()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-medium py-2.5 rounded-xl transition mb-3 flex items-center justify-center gap-2"><i class="fas fa-download"></i> Backup Data</button>
+        <div class="relative mt-1">
+          <input id="restoreFile" type="file" class="w-full text-sm border border-gray-200 rounded-xl p-2 bg-gray-50">
+        </div>
+        <button onclick="restoreData()" class="w-full mt-3 bg-orange-500 hover:bg-orange-600 text-white font-medium py-2.5 rounded-xl transition flex items-center justify-center gap-2"><i class="fas fa-upload"></i> Restore Data</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- FLOATING ACTION BUTTON -->
+  <button class="fab fixed bottom-28 right-5 w-14 h-14 rounded-full bg-gradient-to-tr from-blue-500 to-indigo-600 text-white shadow-2xl flex items-center justify-center text-2xl z-30 fab-pulse" onclick="switchTab('transaksiTab', document.querySelectorAll('.nav-btn')[1])">
+    <i class="fas fa-plus"></i>
+  </button>
+
+  <!-- BOTTOM NAVIGATION -->
+  <div class="fixed bottom-0 left-0 right-0 bg-white/90 backdrop-blur-md border-t border-gray-200/80 shadow-lg flex justify-around items-center py-2 px-3 z-40">
+    <button onclick="switchTab('dashboardTab', this)" class="nav-btn active flex flex-col items-center gap-1 text-slate-500 hover:text-blue-600 transition">
+      <i class="fas fa-home text-xl"></i>
+      <span class="text-[11px] font-medium">Beranda</span>
+    </button>
+    <button onclick="switchTab('transaksiTab', this)" class="nav-btn flex flex-col items-center gap-1 text-slate-500 hover:text-blue-600 transition">
+      <i class="fas fa-list-ul text-xl"></i>
+      <span class="text-[11px] font-medium">Transaksi</span>
+    </button>
+    <button onclick="switchTab('targetTab', this)" class="nav-btn flex flex-col items-center gap-1 text-slate-500 hover:text-blue-600 transition">
+      <i class="fas fa-flag-checkered text-xl"></i>
+      <span class="text-[11px] font-medium">Target</span>
+    </button>
+    <button onclick="switchTab('grafikTab', this)" class="nav-btn flex flex-col items-center gap-1 text-slate-500 hover:text-blue-600 transition">
+      <i class="fas fa-chart-pie text-xl"></i>
+      <span class="text-[11px] font-medium">Grafik</span>
+    </button>
+    <button onclick="switchTab('backupTab', this)" class="nav-btn flex flex-col items-center gap-1 text-slate-500 hover:text-blue-600 transition">
+      <i class="fas fa-cloud-arrow-up text-xl"></i>
+      <span class="text-[11px] font-medium">Backup</span>
+    </button>
+  </div>
+</div>
+
+<script>
+  // DATA STATE
+  let transaksi = [];
+  let targets = [];
+  let chart = null;
+
+  // Helper functions
+  function formatRupiah(angka) {
+    return "Rp " + angka.toLocaleString("id-ID");
+  }
+
+  function escapeHtml(str) {
+    if (!str) return '';
+    return str.replace(/[&<>]/g, function(m) {
+      if (m === '&') return '&amp;';
+      if (m === '<') return '&lt;';
+      if (m === '>') return '&gt;';
+      return m;
+    });
+  }
+
+  // Load data from localStorage
+  function loadData() {
+    try {
+      const savedTransaksi = localStorage.getItem("transaksi");
+      const savedTargets = localStorage.getItem("targets");
+      transaksi = savedTransaksi ? JSON.parse(savedTransaksi) : [];
+      targets = savedTargets ? JSON.parse(savedTargets) : [];
+    } catch(e) {
+      console.error("Error loading data:", e);
+      transaksi = [];
+      targets = [];
+    }
+  }
+
+  // Save data to localStorage
+  function saveData() {
+    localStorage.setItem("transaksi", JSON.stringify(transaksi));
+    localStorage.setItem("targets", JSON.stringify(targets));
+  }
+
+  // Render all UI
+  function render() {
+    let pemasukan = 0;
+    let pengeluaran = 0;
+
+    // Hitung total
+    transaksi.forEach(t => {
+      if (t.jenis === "pemasukan") pemasukan += t.jumlah;
+      else pengeluaran += t.jumlah;
+    });
+
+    const saldo = pemasukan - pengeluaran;
+    const saldoEl = document.getElementById("saldo");
+    if (saldoEl) saldoEl.innerText = formatRupiah(saldo);
+    const pemasukanEl = document.getElementById("pemasukan");
+    if (pemasukanEl) pemasukanEl.innerText = formatRupiah(pemasukan);
+    const pengeluaranEl = document.getElementById("pengeluaran");
+    if (pengeluaranEl) pengeluaranEl.innerText = formatRupiah(pengeluaran);
+
+    // Render riwayat transaksi
+    const listContainer = document.getElementById("riwayat");
+    if (listContainer) {
+      if (transaksi.length === 0) {
+        listContainer.innerHTML = `<div class="text-center py-8 bg-white rounded-xl shadow-sm"><i class="fas fa-receipt text-3xl text-gray-300 mb-2"></i><p class="text-gray-400 text-sm">Belum ada transaksi.<br>Tekan tombol + untuk mulai</p></div>`;
+      } else {
+        listContainer.innerHTML = "";
+        transaksi.forEach((t, i) => {
+          const li = document.createElement("li");
+          li.className = "bg-white p-4 rounded-xl shadow-sm border border-gray-50 flex justify-between items-center transition hover:shadow-md";
+          li.innerHTML = `
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 rounded-full flex items-center justify-center ${t.jenis === 'pemasukan' ? 'bg-emerald-100 text-emerald-600' : 'bg-rose-100 text-rose-600'}">
+                <i class="fas ${t.jenis === 'pemasukan' ? 'fa-arrow-up' : 'fa-arrow-down'}"></i>
+              </div>
+              <div>
+                <p class="font-semibold text-gray-800">${escapeHtml(t.nama)}</p>
+                <p class="text-xs text-gray-400">${t.tanggal || new Date().toLocaleDateString('id-ID')}</p>
+              </div>
+            </div>
+            <div class="flex items-center gap-3">
+              <span class="font-bold ${t.jenis === 'pemasukan' ? 'text-emerald-600' : 'text-rose-600'}">${formatRupiah(t.jumlah)}</span>
+              <button onclick="hapusTransaksi(${i})" class="text-gray-400 hover:text-red-500 transition"><i class="fas fa-trash-alt"></i></button>
+            </div>
+          `;
+          listContainer.appendChild(li);
+        });
+      }
+    }
+
+    // Render chart
+    updateChart(pemasukan, pengeluaran);
+    
+    // Render targets
+    renderTargets();
+  }
+
+  function updateChart(pemasukan, pengeluaran) {
+    const canvas = document.getElementById("chart");
+    if (!canvas) return;
+    
+    // Destroy existing chart if any
+    if (chart) {
+      try { chart.destroy(); } catch(e) {}
+      chart = null;
+    }
+    
+    try {
+      chart = new Chart(canvas, {
+        type: 'doughnut',
+        data: {
+          labels: ['Pemasukan', 'Pengeluaran'],
+          datasets: [{
+            data: [pemasukan, pengeluaran],
+            backgroundColor: ['#10b981', '#f43f5e'],
+            borderWidth: 0,
+            hoverOffset: 8,
+            borderRadius: 12,
+            spacing: 5
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: true,
+          plugins: {
+            legend: { position: 'bottom', labels: { font: { size: 12 }, usePointStyle: true, boxWidth: 8 } },
+            tooltip: { callbacks: { label: (tooltip) => `${tooltip.label}: ${formatRupiah(tooltip.raw)}` } }
+          },
+          cutout: '65%',
+        }
+      });
+    } catch(e) {
+      console.error("Chart error:", e);
+    }
+  }
+
+  function renderTargets() {
+    const container = document.getElementById("targetList");
+    if (!container) return;
+    if (targets.length === 0) {
+      container.innerHTML = `<div class="bg-white/70 rounded-xl p-4 text-center text-gray-400 text-sm"><i class="far fa-folder-open"></i> Belum ada target. Buat target tabunganmu!</div>`;
+      return;
+    }
+    container.innerHTML = "";
+    targets.forEach((t, idx) => {
+      const card = document.createElement("div");
+      card.className = "bg-white rounded-xl p-4 shadow-sm border-l-4 border-purple-400 flex justify-between items-center";
+      card.innerHTML = `
+        <div>
+          <h4 class="font-bold text-gray-800"><i class="fas fa-flag-checkered text-purple-500 mr-1"></i> ${escapeHtml(t.nama)}</h4>
+          <p class="text-sm font-semibold text-purple-600">${formatRupiah(t.target)}</p>
+        </div>
+        <button onclick="hapusTarget(${idx})" class="text-gray-300 hover:text-red-400"><i class="fas fa-times-circle"></i></button>
+      `;
+      container.appendChild(card);
+    });
+  }
+
+// CRUD Functions
+  function simpanTransaksi() {
+    const nama = document.getElementById("nama").value.trim();
+    const jumlah = Number(document.getElementById("jumlah").value);
+    const jenis = document.getElementById("jenis").value;
+
+    if (!nama || isNaN(jumlah) || jumlah <= 0) {
+      alert("Isi nama dan jumlah yang valid (minimal > 0)");
+      return;
+    }
+
+    transaksi.push({
+      nama: nama,
+      jumlah: jumlah,
+      jenis: jenis,
+      tanggal: new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })
+    });
+    saveData();
+    document.getElementById("nama").value = "";
+    document.getElementById("jumlah").value = "";
+    render();
+    alert("Transaksi berhasil disimpan!");
+  }
+
+  function hapusTransaksi(index) {
+    if (confirm("Yakin ingin menghapus transaksi ini?")) {
+      transaksi.splice(index, 1);
+      saveData();
+      render();
+    }
+  }
+
+  function tambahTarget() {
+    const nama = document.getElementById("targetNama").value.trim();
+    const targetJumlah = Number(document.getElementById("targetJumlah").value);
+    if (!nama || isNaN(targetJumlah) || targetJumlah <= 0) {
+      alert("Isi nama target dan jumlah target yang valid!");
+      return;
+    }
+    targets.push({ nama: nama, target: targetJumlah });
+    saveData();
+    document.getElementById("targetNama").value = "";
+    document.getElementById("targetJumlah").value = "";
+    renderTargets();
+    alert("Target berhasil ditambahkan!");
+  }
+
+  function hapusTarget(index) {
+    if (confirm("Hapus target ini?")) {
+      targets.splice(index, 1);
+      saveData();
+      renderTargets();
+    }
+  }
+
+  function backupData() {
+    const data = { transaksi, targets };
+    const json = JSON.stringify(data, null, 2);
+    const blob = new Blob([json], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    const now = new Date();
+    a.download = `dompetku_backup_${now.getFullYear()}-${now.getMonth()+1}-${now.getDate()}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  function restoreData() {
+    const fileInput = document.getElementById("restoreFile");
+    if (!fileInput.files.length) {
+      alert("Pilih file backup (.json) terlebih dahulu");
+      return;
+    }
+    const file = fileInput.files[0];
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      try {
+        const data = JSON.parse(e.target.result);
+        transaksi = data.transaksi || [];
+        targets = data.targets || [];
+        saveData();
+        render();
+        alert("Data berhasil dipulihkan!");
+        fileInput.value = "";
+      } catch(err) {
+        alert("Gagal membaca file: file tidak valid");
+      }
+    };
+    reader.readAsText(file);
+  }
+
+  function resetData() {
+    if (confirm("PERINGATAN: Semua data akan dihapus permanen. Lanjutkan?")) {
+      transaksi = [];
+      targets = [];
+      saveData();
+      render();
+      alert("Data berhasil direset.");
+    }
+  }
+
+  function switchTab(tabId, el) {
+    const tabs = document.querySelectorAll(".tab");
+    tabs.forEach(tab => tab.classList.remove("active"));
+    const targetTab = document.getElementById(tabId);
+    if (targetTab) targetTab.classList.add("active");
+    
+    const buttons = document.querySelectorAll(".nav-btn");
+    buttons.forEach(btn => btn.classList.remove("active"));
+    if (el) el.classList.add("active");
+  }
+
+  // Initialize App - Pastikan semua data dimuat dan splash hilang
+  function initApp() {
+    loadData();
+    render();
+    
+    // Hide splash after everything is ready
+    const splash = document.getElementById("splash");
+    const mainApp = document.getElementById("mainApp");
+    
+    if (splash && mainApp) {
+      splash.style.opacity = "0";
+      setTimeout(function() {
+        splash.style.display = "none";
+        mainApp.style.display = "block";
+      }, 500);
+    }
+  }
+
+  // Wait for DOM and all resources
+  window.addEventListener("DOMContentLoaded", function() {
+    // Tunggu sebentar untuk Chart.js dan Font Awesome benar-benar siap
+    setTimeout(initApp, 100);
+  });
+
+  // Expose functions globally
+  window.simpanTransaksi = simpanTransaksi;
+  window.hapusTransaksi = hapusTransaksi;
+  window.tambahTarget = tambahTarget;
+  window.hapusTarget = hapusTarget;
+  window.backupData = backupData;
+  window.restoreData = restoreData;
+  window.resetData = resetData;
+  window.switchTab = switchTab;
+</script>
+</body>
+</html>
+```
